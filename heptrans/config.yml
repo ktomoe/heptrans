@@ -1,0 +1,85 @@
+data_path: ./data/MG.gat/
+save_dir: ./tmp/saver
+source_domains:
+    - ttbar 
+    - 2hdm425-325
+source_phase:
+    - 10000000
+    - 50000
+    - 50000
+target_domains:
+    - ttbar 
+    - 2hdm500-400
+    - ttbb
+    - tth
+    - zprime1000
+    - gogo
+    - znunu
+target_phase:
+    - 500000
+    - 50000
+    - 50000
+var_names:
+    - features
+    - labels
+zarr_args_a: &zarr_args_a
+    chunk: 10000
+    output_dir: ./db/heptrans.zarr
+    mode: a
+zarr_args_w: &zarr_args_w
+    chunk: 10000
+    output_dir: ./db/heptrans.zarr
+    mode: w
+sg_args_a:
+    backend: hybrid
+    backend_args: *zarr_args_a
+    data_id: heptrans
+sg_args_w:
+    backend: hybrid
+    backend_args: *zarr_args_w
+    data_id: heptrans
+task_args:
+    num_epochs: 100
+    num_workers: 4
+    device: 'cuda'
+    batch_size: 256
+    batch_sampler: True
+    optimizer: SGD
+    optimizer_args:
+        per_params:
+            - params: features
+              lr: 0.01
+            - params: fc
+              lr: 0.01
+        lr: 0.01
+        momentum: 0.9
+        weight_decay: 0.00005
+    metrics:
+        - acc
+        - loss
+        - lr
+    scheduler: CosineAnnealingLR
+    scheduler_args:
+        T_max: 100
+        eta_min: 0.0001
+    max_patience: 100
+    loss: CrossEntropyLoss
+    input_var_names: features
+    output_var_names:
+        - pred
+        - attn1
+        - attn2
+        - attn3
+        - attn4
+        - attn5
+        - attn6
+    pred_var_names:
+        - pred
+    true_var_names: labels
+    torchinfo: True
+    verbose: 1
+agent_args:
+    dump_all_results: True
+    metric: ACCMetric
+    metric_args:
+        var_names: 'pred labels'
